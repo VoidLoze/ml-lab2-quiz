@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ML Lab 2 Quiz: Life Satisfaction vs GDP</title>
+<style>
+  :root {
+    --bg: #f5f7fb; --card: #ffffff; --text: #111827; --muted: #6b7280; --border: #e5e7eb;
+    --accent: #2563eb; --accent-soft: #eff6ff; --ok: #16a34a; --ok-soft: #dcfce7;
+    --bad: #dc2626; --bad-soft: #fee2e2; --code: #f1f5f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1120; --card: #111827; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937;
+      --accent: #60a5fa; --accent-soft: #172554; --ok: #4ade80; --ok-soft: #052e16;
+      --bad: #f87171; --bad-soft: #450a0a; --code: #1e293b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         -webkit-text-size-adjust: 100%; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 16px 14px 40px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
+          box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  h1 { font-size: 1.45rem; margin: 0 0 6px; line-height: 1.25; }
+  h2 { font-size: 1.15rem; margin: 0 0 12px; line-height: 1.35; }
+  .muted { color: var(--muted); font-size: .92rem; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 5px; font-size: .88em;
+         font-family: Menlo, Consolas, monospace; word-break: break-word; }
+  .topic { display: inline-block; font-size: .75rem; font-weight: 600; text-transform: uppercase;
+           letter-spacing: .05em; color: var(--accent); background: var(--accent-soft);
+           padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+  .bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 10px 0 16px; }
+  .bar > div { height: 100%; background: var(--accent); transition: width .25s; }
+  .top { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; color: var(--muted); }
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt { text-align: left; font: inherit; color: var(--text); background: var(--card);
+         border: 2px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer;
+         display: flex; gap: 10px; align-items: flex-start; }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt .key { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft);
+              color: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: .85rem; }
+  .opt.correct { border-color: var(--ok); background: var(--ok-soft); }
+  .opt.correct .key { background: var(--ok); color: #fff; }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .opt.wrong .key { background: var(--bad); color: #fff; }
+  .opt:disabled { cursor: default; }
+  .explain { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft);
+             font-size: .95rem; }
+  .explain b.ok { color: var(--ok); } .explain b.bad { color: var(--bad); }
+  .btn { font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 13px 18px;
+         background: var(--accent); color: #fff; cursor: pointer; width: 100%; margin-top: 14px; }
+  .btn.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row .btn { flex: 1 1 180px; }
+  label.check { display: flex; gap: 10px; align-items: center; margin: 12px 0; font-size: .95rem; }
+  label.check input { width: 20px; height: 20px; }
+  .score { font-size: 3rem; font-weight: 800; text-align: center; margin: 6px 0 0; }
+  .grade { text-align: center; margin-bottom: 10px; }
+  .review { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .review .item { border: 1px solid var(--border); border-left: 4px solid var(--bad); border-radius: 10px;
+                  padding: 10px 12px; font-size: .93rem; }
+  .review .item p { margin: 4px 0; }
+  .links { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .links a { flex: 1 1 200px; text-align: center; text-decoration: none; color: var(--accent);
+             border: 1px solid var(--border); border-radius: 12px; padding: 10px; font-size: .92rem; }
+  ul.topics { padding-left: 20px; margin: 8px 0; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="start" class="card">
+    <h1>Lab 2 Quiz: Life Satisfaction vs GDP per Capita</h1>
+    <p class="muted">KBTU · Machine Learning · Linear Regression &amp; KNN with scikit-learn</p>
+    <p>Practice test covering the skills from the lab:</p>
+    <ul class="topics">
+      <li>Loading and exploring data with pandas</li>
+      <li>Linear regression: coefficients, predictions, MSE, R²</li>
+      <li>K-nearest neighbors regression and the choice of k</li>
+      <li>Overfitting, underfitting, extrapolation and generalization</li>
+    </ul>
+    <p class="muted" id="count"></p>
+    <label class="check"><input type="checkbox" id="shuffle" checked> Shuffle questions</label>
+    <button class="btn" id="go">Start quiz</button>
+    <div class="links">
+      <a href="Lab2_Report_EN.pdf">📄 Lab report (English)</a>
+      <a href="Lab2_Report_RU.pdf">📄 Отчёт (русский)</a>
+    </div>
+  </div>
+
+  <div id="quiz" class="card hidden">
+    <div class="top"><span id="pos"></span><span id="live"></span></div>
+    <div class="bar"><div id="fill"></div></div>
+    <span class="topic" id="topic"></span>
+    <h2 id="question"></h2>
+    <div class="opts" id="opts"></div>
+    <div class="explain hidden" id="explain"></div>
+    <button class="btn hidden" id="next">Next</button>
+  </div>
+
+  <div id="result" class="card hidden">
+    <h1 style="text-align:center">Your result</h1>
+    <div class="score" id="score"></div>
+    <div class="grade muted" id="grade"></div>
+    <div class="row">
+      <button class="btn" id="again">Retake all</button>
+      <button class="btn secondary" id="missed">Retry mistakes</button>
+    </div>
+    <div class="review" id="review"></div>
+  </div>
+
+</div>
+
+<script>
+// The first option of each question is the correct one; options are shuffled at runtime.
+const QUESTIONS = [
+  { topic: "pandas", q: "Which call loads <code>lifesat.csv</code> into a DataFrame?",
+    o: ["<code>pd.read_csv(\"lifesat.csv\")</code>", "<code>pd.load_csv(\"lifesat.csv\")</code>",
+        "<code>np.read_csv(\"lifesat.csv\")</code>", "<code>pd.DataFrame(\"lifesat.csv\")</code>"],
+    e: "<code>pd.read_csv</code> reads a CSV file and returns a DataFrame." },
+
+  { topic: "pandas", q: "What does <code>df.head()</code> show when called without arguments?",
+    o: ["The first 5 rows", "The column names only", "The first 10 rows", "Summary statistics"],
+    e: "By default <code>head()</code> returns the first 5 rows; <code>head(n)</code> returns the first n." },
+
+  { topic: "pandas", q: "Which method shows the data type of each column and how many non-null values it has?",
+    o: ["<code>df.info()</code>", "<code>df.describe()</code>", "<code>df.shape</code>", "<code>df.head()</code>"],
+    e: "<code>info()</code> shows the structure: row count, columns, dtypes and non-null counts (so you can spot missing values)." },
+
+  { topic: "pandas", q: "In the output of <code>df.describe()</code>, what does the <b>50%</b> row represent?",
+    o: ["The median", "The mean", "Half of the maximum value", "The standard deviation"],
+    e: "The 50th percentile is the median. 25% and 75% are the first and third quartiles." },
+
+  { topic: "Dataset", q: "How many countries (rows) are in <code>lifesat.csv</code>?",
+    o: ["27", "30", "3", "100"],
+    e: "<code>df.info()</code> shows a RangeIndex of 27 entries (0 to 26)." },
+
+  { topic: "Visualization", q: "What does the scatter plot of GDP per capita vs life satisfaction show?",
+    o: ["A strong positive, roughly linear relationship (r ≈ 0.85)",
+        "A strong negative relationship",
+        "No relationship at all",
+        "A perfect straight line with no scatter"],
+    e: "Richer countries tend to report higher satisfaction. The Pearson correlation is about 0.85, but the points are scattered around the trend." },
+
+  { topic: "Visualization", q: "The correlation between GDP and life satisfaction is about 0.85. Which conclusion is correct?",
+    o: ["The variables are strongly associated, but this alone does not prove that GDP causes happiness",
+        "Higher GDP definitely causes higher life satisfaction",
+        "85% of people are satisfied with their lives",
+        "GDP explains exactly 85% of life satisfaction"],
+    e: "Correlation is not causation. Other factors (health, freedom, social support) can drive both. Note that the share of variance explained is r², about 0.73." },
+
+  { topic: "Shapes", q: "What is the shape of <code>X = df[[\"GDP per capita (USD)\"]].values</code>?",
+    o: ["<code>(27, 1)</code>", "<code>(27,)</code>", "<code>(1, 27)</code>", "<code>(27, 3)</code>"],
+    e: "Double brackets select a DataFrame with one column, so <code>.values</code> gives a 2D array of 27 rows and 1 column." },
+
+  { topic: "Shapes", q: "What is the difference between <code>df[\"col\"]</code> and <code>df[[\"col\"]]</code>?",
+    o: ["The first returns a 1D Series, the second a 2D DataFrame",
+        "There is no difference",
+        "The first returns a DataFrame, the second a Series",
+        "The second one selects the column twice"],
+    e: "Single brackets give a Series (1D). Double brackets take a list of columns and return a DataFrame (2D)." },
+
+  { topic: "Shapes", q: "Why must <code>X</code> be two-dimensional for scikit-learn?",
+    o: ["scikit-learn expects features as a matrix of shape (n_samples, n_features)",
+        "Because linear regression needs at least two features",
+        "Because pandas cannot store 1D data",
+        "It doesn't: scikit-learn accepts any shape"],
+    e: "Every scikit-learn model expects a 2D feature matrix, even when there is only one feature." },
+
+  { topic: "Shapes", q: "Which is the correct way to predict for a single GDP value of 37,655.2?",
+    o: ["<code>model.predict([[37655.2]])</code>", "<code>model.predict(37655.2)</code>",
+        "<code>model.predict([37655.2])</code>", "<code>model.predict(X=37655.2, y=None)</code>"],
+    e: "One sample with one feature is a 1×1 matrix: <code>[[37655.2]]</code>. The other forms raise a shape error." },
+
+  { topic: "scikit-learn", q: "What is the standard workflow for a scikit-learn model?",
+    o: ["Create the model → <code>fit(X, y)</code> → <code>predict(X_new)</code>",
+        "<code>predict(X)</code> → <code>fit(X, y)</code> → create the model",
+        "<code>train(X)</code> → <code>test(y)</code>",
+        "<code>fit(X_new)</code> → <code>predict(X, y)</code>"],
+    e: "All estimators share the same API, so you can swap <code>LinearRegression()</code> for <code>KNeighborsRegressor()</code> by changing one line." },
+
+  { topic: "Linear regression", q: "In ŷ = θ₀ + θ₁·x, which attribute of a fitted <code>LinearRegression</code> stores θ₁ (the slope)?",
+    o: ["<code>coef_</code>", "<code>intercept_</code>", "<code>slope_</code>", "<code>score_</code>"],
+    e: "<code>coef_</code> holds the slope(s); <code>intercept_</code> holds θ₀. The trailing underscore marks attributes learned during <code>fit</code>." },
+
+  { topic: "Linear regression", q: "<code>y</code> was created with double brackets, so it is 2D. How do you print the coefficient as a single number?",
+    o: ["<code>lin_reg.coef_[0][0]</code>", "<code>lin_reg.coef_</code>", "<code>lin_reg.coef_[1]</code>", "<code>lin_reg.coef()</code>"],
+    e: "With a 2D <code>y</code>, <code>coef_</code> has shape (1, 1), so you need <code>[0][0]</code>. With a 1D <code>y</code> it would be <code>coef_[0]</code>." },
+
+  { topic: "Linear regression", q: "The fitted coefficient is about 6.78×10⁻⁵. What does it mean?",
+    o: ["Each extra 1,000 USD of GDP adds about 0.068 points of life satisfaction",
+        "Each extra 1 USD of GDP adds 6.78 points",
+        "Life satisfaction is 6.78 when GDP is zero",
+        "The model is useless because the coefficient is almost zero"],
+    e: "The coefficient is small because GDP is measured in dollars: 6.78×10⁻⁵ × 1,000 ≈ 0.068, and × 10,000 ≈ 0.68 points." },
+
+  { topic: "Linear regression", q: "The intercept is about 3.75. How should it be interpreted?",
+    o: ["It is the prediction at GDP = 0, an extrapolation with no practical meaning here",
+        "It is the average life satisfaction in the dataset",
+        "It is the error of the model",
+        "It is the minimum possible life satisfaction"],
+    e: "Mathematically it is ŷ at x = 0, but no country in the data has GDP anywhere near 0, so it should not be interpreted literally." },
+
+  { topic: "Linear regression", q: "With θ₀ = 3.75 and θ₁ = 6.78×10⁻⁵, what does the model predict for GDP = 50,000 USD?",
+    o: ["≈ 7.14", "≈ 6.30", "≈ 3.75", "≈ 10.53"],
+    e: "3.75 + 0.0000678 × 50,000 = 3.75 + 3.39 ≈ 7.14." },
+
+  { topic: "Linear regression", q: "What does the linear regression model predict for GDP = 37,655.2 USD?",
+    o: ["≈ 6.30", "≈ 7.20", "≈ 6.57", "≈ 5.90"],
+    e: "3.749 + 6.779×10⁻⁵ × 37,655.2 ≈ 6.30, which lies between similar countries (Lithuania 5.9, Israel 7.2)." },
+
+  { topic: "Linear regression", q: "What does <code>LinearRegression</code> minimize when fitting the line?",
+    o: ["The sum (mean) of squared errors between predictions and true values",
+        "The number of misclassified points",
+        "The sum of absolute coefficients",
+        "The distance to the k nearest neighbors"],
+    e: "Ordinary least squares minimizes MSE = (1/m) Σ (ŷᵢ − yᵢ)²." },
+
+  { topic: "Linear regression", q: "The linear model has R² ≈ 0.73 on the training data. What does this mean?",
+    o: ["The line explains about 73% of the variance in life satisfaction",
+        "73% of predictions are exactly correct",
+        "The model's error is 0.73 points",
+        "The model will be 73% accurate on any new country"],
+    e: "R² is the share of variance explained. Since it was measured on training data, it says nothing reliable about new data." },
+
+  { topic: "Plotting", q: "What is the purpose of <code>np.linspace(X.min(), X.max(), 100).reshape(-1, 1)</code> in Q6?",
+    o: ["It creates 100 evenly spaced GDP values as a column, to draw the regression line with <code>predict</code>",
+        "It splits the data into training and test sets",
+        "It normalizes GDP to the range 0–1",
+        "It removes outliers from X"],
+    e: "<code>linspace</code> makes a 1D grid; <code>reshape(-1, 1)</code> turns it into a 2D column so <code>predict</code> accepts it. -1 means \"infer this dimension\"." },
+
+  { topic: "KNN", q: "How does <code>KNeighborsRegressor</code> make a prediction?",
+    o: ["It averages the target values of the k closest training points",
+        "It fits a straight line through the k closest points and extrapolates",
+        "It takes a majority vote among the k closest points",
+        "It returns the target of the farthest point"],
+    e: "KNN regression returns the mean of the k nearest neighbors. Majority voting is used in KNN classification." },
+
+  { topic: "KNN", q: "The 3 countries closest to GDP = 37,655.2 are Israel (7.2), Lithuania (5.9) and Slovenia (5.9). What does KNN with k = 3 predict?",
+    o: ["≈ 6.33", "7.2", "≈ 6.30", "5.9"],
+    e: "(7.2 + 5.9 + 5.9) / 3 = 19.0 / 3 ≈ 6.33, only about 0.03 above the linear regression result." },
+
+  { topic: "KNN", q: "Why does KNN with k = 1 predict exactly 7.2 for GDP = 37,655.2?",
+    o: ["The single nearest country is Israel, whose life satisfaction is 7.2",
+        "7.2 is the mean of the whole dataset",
+        "7.2 is the maximum value in the dataset",
+        "k = 1 always predicts the median"],
+    e: "Israel (GDP ≈ 38,341) is the closest point, about 686 USD away, so k = 1 copies its value." },
+
+  { topic: "KNN", q: "KNN with k = 1 gets R² = 1.0 on the training data. What is the best interpretation?",
+    o: ["Each point is its own nearest neighbor, so this shows overfitting, not good generalization",
+        "The model is perfect and should be used",
+        "k = 1 is always the best choice",
+        "The data has no noise"],
+    e: "Evaluating on the training data hides overfitting. You need a separate test set or cross-validation." },
+
+  { topic: "KNN", q: "What happens if you set k = 27 (all countries)?",
+    o: ["The model always predicts the overall mean (≈ 6.57): extreme underfitting",
+        "The model becomes identical to linear regression",
+        "The model overfits even more",
+        "scikit-learn raises an error"],
+    e: "Averaging all 27 points for every input gives a constant prediction equal to the dataset mean." },
+
+  { topic: "KNN", q: "In general, what happens as k increases?",
+    o: ["Predictions become smoother: lower variance, higher bias",
+        "Predictions become more jagged: higher variance, lower bias",
+        "Nothing changes",
+        "The model learns more parameters"],
+    e: "Small k → flexible, noise-sensitive (overfitting). Large k → smooth, may miss real patterns (underfitting)." },
+
+  { topic: "Concepts", q: "Which statement correctly compares the two models?",
+    o: ["Linear regression is model-based learning; KNN is instance-based learning",
+        "Both are instance-based learning",
+        "Linear regression is instance-based; KNN is model-based",
+        "KNN learns a slope and an intercept"],
+    e: "Linear regression learns parameters and no longer needs the data. KNN stores the data and compares new points to it (lazy learning)." },
+
+  { topic: "Generalization", q: "For a country with GDP = 150,000 USD, which statement is true?",
+    o: ["Linear regression predicts a value above 10 (impossible on a 0–10 scale); KNN repeats the values of the richest countries",
+        "Both models give reliable predictions",
+        "KNN predicts a value above 10",
+        "Linear regression refuses to predict outside the training range"],
+    e: "Linear regression extrapolates the line without limit (≈ 13.9 here). KNN can never leave the range of observed targets." },
+
+  { topic: "Generalization", q: "What is the main methodological weakness of how the models were evaluated in this lab?",
+    o: ["There is no train/test split, so generalization to new data was never measured",
+        "The wrong library was used",
+        "The dataset has missing values",
+        "Linear regression cannot be used with one feature"],
+    e: "Both models were fitted and judged on the same 27 points. Use <code>train_test_split</code> or cross-validation to estimate performance on unseen data." },
+
+  { topic: "Generalization", q: "All countries in the dataset have GDP between about 26,000 and 60,000 USD. What problem does this create?",
+    o: ["Sampling bias: predictions for much poorer or richer countries are unreliable",
+        "Overfitting is impossible",
+        "The model cannot be trained",
+        "KNN becomes identical to linear regression"],
+    e: "Models only learn the pattern within the observed range; outside it, they are extrapolating." },
+
+  { topic: "Generalization", q: "If more features (e.g. life expectancy, unemployment rate) were added, why would KNN need feature scaling?",
+    o: ["KNN is based on distances, so a feature with large numbers (like GDP) would dominate",
+        "Because KNN only works with values between 0 and 1",
+        "Scaling makes KNN train faster but does not change predictions",
+        "It wouldn't: KNN is scale-invariant"],
+    e: "Without scaling (e.g. <code>StandardScaler</code>), a difference of 1,000 USD would outweigh a difference of 10 years of life expectancy." },
+];
+
+const $ = id => document.getElementById(id);
+const KEYS = "ABCD";
+let order = [], idx = 0, score = 0, wrong = [];
+
+$("count").textContent = `${QUESTIONS.length} multiple-choice questions · instant feedback with explanations`;
+
+function shuffle(a) {
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function start(indices) {
+  order = $("shuffle").checked ? shuffle(indices) : indices;
+  idx = 0; score = 0; wrong = [];
+  $("start").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  render();
+}
+
+function render() {
+  const q = QUESTIONS[order[idx]];
+  $("pos").textContent = `Question ${idx + 1} of ${order.length}`;
+  $("live").textContent = `Score: ${score}`;
+  $("fill").style.width = `${(idx / order.length) * 100}%`;
+  $("topic").textContent = q.topic;
+  $("question").innerHTML = q.q;
+  $("explain").classList.add("hidden");
+  $("next").classList.add("hidden");
+  const opts = $("opts");
+  opts.innerHTML = "";
+  shuffle(q.o.map((text, i) => ({ text, correct: i === 0 }))).forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="key">${KEYS[i]}</span><span>${opt.text}</span>`;
+    b.dataset.correct = opt.correct;
+    b.onclick = () => answer(b);
+    opts.appendChild(b);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function answer(btn) {
+  const q = QUESTIONS[order[idx]];
+  const ok = btn.dataset.correct === "true";
+  [...$("opts").children].forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === "true") b.classList.add("correct");
+  });
+  if (ok) score++;
+  else { btn.classList.add("wrong"); wrong.push(order[idx]); }
+  $("live").textContent = `Score: ${score}`;
+  const ex = $("explain");
+  ex.innerHTML = `<b class="${ok ? "ok" : "bad"}">${ok ? "Correct!" : "Incorrect."}</b> ${q.e}`;
+  ex.classList.remove("hidden");
+  const next = $("next");
+  next.textContent = idx + 1 < order.length ? "Next" : "See results";
+  next.classList.remove("hidden");
+  next.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function finish() {
+  $("quiz").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  const pct = Math.round((score / order.length) * 100);
+  $("score").textContent = `${score} / ${order.length}`;
+  $("grade").textContent = pct >= 90 ? `${pct}% · Excellent, you're ready!`
+    : pct >= 70 ? `${pct}% · Good, review the mistakes below`
+    : `${pct}% · Re-read the report and try again`;
+  $("missed").classList.toggle("hidden", wrong.length === 0);
+  $("review").innerHTML = wrong.length === 0 ? "" :
+    "<h2>Review your mistakes</h2>" + wrong.map(i => {
+      const q = QUESTIONS[i];
+      return `<div class="item"><p><b>${q.q}</b></p><p>✅ ${q.o[0]}</p><p class="muted">${q.e}</p></div>`;
+    }).join("");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+$("go").onclick = () => start(QUESTIONS.map((_, i) => i));
+$("next").onclick = () => { idx++; idx < order.length ? render() : finish(); };
+$("again").onclick = () => start(QUESTIONS.map((_, i) => i));
+$("missed").onclick = () => start(wrong.slice());
+</script>
+</body>
+</html>
